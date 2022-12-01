@@ -32,9 +32,9 @@ import {
   UPDATE_USER,
   GET_ALL_CITIES,
   GET_USER_BY_ID,
-} from "../client";
+} from "../dataQuery";
 import { Spinner } from "@chakra-ui/react";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useSubscription } from "@apollo/client";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 
 const ReactTable = () => {
@@ -51,9 +51,9 @@ const ReactTable = () => {
   const [Response, setResponse] = useState(false);
   const toast = useToast();
   const [update_user, setUpdate_User] = useState(false);
-  const getUser = useQuery(GET_USER);
-  const getUserbyId = useQuery(GET_USER_BY_ID);
-  const getcities = useQuery(GET_ALL_CITIES);
+  const getUser = useSubscription(GET_USER);
+  const getUserbyId = useSubscription(GET_USER_BY_ID);
+  const getcities = useSubscription(GET_ALL_CITIES);
 
   const [addUser] = useMutation(ADD_USER);
   const [delete_User] = useMutation(DELETE_USER);
@@ -70,10 +70,10 @@ const ReactTable = () => {
   };
 
   const handleInputChangeCity = (e) => {
-    setCityId(JSON.parse(e.target.value));
+    setCityId(e.target.value);
   };
 
-  const updateUser = (data) => {
+  const updateUser = (data) => {debugger
     setUpdate_User(true);
     console.log("update_user", update_user);
     setOpenModal(true);
@@ -86,9 +86,9 @@ const ReactTable = () => {
     getUserbyId({
       fetchPolicy: "no-cache",
       variables: {
-        id: cityId,
+        id: data.id,
       },
-    }).then((res) => {
+    }).then((res) => {debugger
       console.log("res", res);
     });
   };
@@ -108,7 +108,7 @@ const ReactTable = () => {
       },
     }).then((res) => {
       setResponse(false);
-      getUser.refetch();
+      // getUser.refetch();
       console.log(res);
       toast({
         title: "User deleted.",
@@ -144,7 +144,7 @@ const ReactTable = () => {
         //isClosable: true,
       });
     } else {
-      if (update_user == true) {
+      if (update_user == true) {debugger
         setResponse(true);
         setOpenModal(false);
         update_User({
@@ -158,7 +158,7 @@ const ReactTable = () => {
           },
         }).then((res) => {
           setResponse(false);
-          getUser.refetch();
+          // getUser.refetch();
           console.log(res);
           toast({
             title: "User updated.",
@@ -180,7 +180,7 @@ const ReactTable = () => {
             cityId: cityId,
           },
         }).then((res) => {
-          getUser.refetch();
+          // getUser.refetch();
           setResponse(false);
           console.log(res);
           toast({
@@ -250,7 +250,7 @@ const ReactTable = () => {
       )}
 
       {/* modal */}
-      <Modal isOpen={openModal} onClose={onClose}>
+      <Modal isOpen={openModal} closeOnOverlayClick={false} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           {update_user == true ? (
@@ -269,6 +269,7 @@ const ReactTable = () => {
                 onChange={handleInputChangeRole}
                 type="role"
               />
+              <FormLabel>City</FormLabel>
               <Select
                 placeholder={
                   cityId == null || cityId == undefined
@@ -278,7 +279,7 @@ const ReactTable = () => {
                 onChange={handleInputChangeCity}
               >
                 {getcities.data?.cities?.map((item) => (
-                  <option key={item} value={city == "" ? item.id : city}>
+                  <option key={item} value={item.id}>
                     {item.name}
                   </option>
                 ))}
@@ -303,7 +304,7 @@ const ReactTable = () => {
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={deleteModal} onClose={onClose}>
+      <Modal isOpen={deleteModal} closeOnOverlayClick={false} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Delete User</ModalHeader>
